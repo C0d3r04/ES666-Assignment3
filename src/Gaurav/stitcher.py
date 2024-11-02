@@ -143,7 +143,7 @@ class PanaromaStitcher():
         return result_image
 
 
-    def image_stitcher(self, imageB,imageA, lowe_ratio=0.75, max_Threshold=4.0):
+    def image_stitcher(self, imageB,imageA, lowe_ratio=0.8, max_Threshold=5.0):
         # detect the features and keypoints from sift
         key_points_A, features_of_A = self.detect_features_and_keypoints_using_SIFT(imageA)
         key_points_B, features_of_B = self.detect_features_and_keypoints_using_SIFT(imageB)
@@ -170,6 +170,19 @@ class PanaromaStitcher():
             temp = cv2.imread(all_images[i])
             temp = cv2.resize(temp,(500,500))
             images.append(temp)
+
+        for i in range(no_of_images):
+            for j in range(i+1,no_of_images):
+                key_points_A, features_of_A = self.detect_features_and_keypoints_using_SIFT(images[i])
+                key_points_B, features_of_B = self.detect_features_and_keypoints_using_SIFT(images[j])
+
+                # get the valid matched points and compute H matrix
+                Homography = self.match_keypoints(key_points_A, key_points_B, features_of_A, features_of_B, 0.8, 5)
+                if Homography is None:
+                    homography_matrix_list.append([])
+
+                else:
+                    homography_matrix_list.append(Homography)
 
         result = self.image_stitcher(images[no_of_images - 2], images[no_of_images - 1])
         for i in range(no_of_images-2):
